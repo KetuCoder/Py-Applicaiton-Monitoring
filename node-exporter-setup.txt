@@ -1,0 +1,39 @@
+sudo useradd -rs /bin/false node_exporter
+
+cd /tmp
+curl -LO https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
+tar -xzf node_exporter-1.8.1.linux-amd64.tar.gz
+sudo cp node_exporter-1.8.1.linux-amd64/node_exporter /usr/local/bin/
+sudo chown node_exporter:node_exporter /usr/local/bin/node_exporter
+
+sudo tee /etc/systemd/system/node_exporter.service > /dev/null <<EOF
+[Unit]
+Description=Prometheus Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=default.target
+EOF
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable node_exporter
+sudo systemctl start node_exporter
+
+Edit your Prometheus configuration file, typically at /etc/prometheus/prometheus.yml and add a new job under scrape_configs:
+
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+
+
+http://<your-server-ip>:9100/metrics
+
+sudo systemctl restart prometheus
