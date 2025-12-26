@@ -1,0 +1,1 @@
+This repo is a basic Python Flask application that exposes Prometheus metrics, tracks HTTP requests, integrates with Node Exporter for system metrics, and triggers CPU alerts visualized in Grafana.
